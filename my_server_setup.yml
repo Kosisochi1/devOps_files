@@ -1,0 +1,102 @@
+---
+
+ - hosts: web_server
+   become: true
+
+
+   tasks:
+
+    - name: Update cache 
+      tags: always 
+      apt:
+          upgrade: dist 
+          update_cache: yes 
+
+
+    - name: install hardware clock
+      tags: hwclock
+      apt:
+         name: util-linux
+
+    - name: Set Timezone to Africa/Lagos
+      tags: timezone 
+      timezone: 
+           name: Africa/Lagos
+  
+
+
+
+
+    - name: Install apache
+      tags: apache2 
+      apt:
+        name:      
+          - libapache2-mod-php
+          - nano
+          - git
+        state: present 
+     
+
+
+ - hosts: web_server
+   become: true
+   tasks:
+
+    - name: Create Group
+      tags: group
+      group: 
+       name: engineering
+
+       state: present
+
+    - name: Create User in the Server
+      tags: always
+      user: 
+         name: kosi
+         group: engineering
+
+    - name: Add ssh key
+      tags: authorized_key
+      authorized_key:
+            user: kosi
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBgum7aSX1txxuDs8lA/PdKg27Ras2mW0V5jeGVzKTtG kosi"
+
+
+
+
+
+    - name: Add User Sudoers
+      tags: always
+      copy: 
+       src: sudoer_kosi
+       dest: /etc/sudoers.d/kosi
+       owner: kosi
+       group: engineering
+
+
+#    - name: Install Apache for web_server
+ #     tags: always
+  #    apt:
+   #    name:
+    #     - apache2
+     #  state: present
+
+
+
+    - name: Enable Apache to start on boot
+      tags: apache, apache2
+      service:
+          name: apache2
+          state: restarted
+          enabled: yes
+
+
+    - name: Deploy html
+      tags: htttpd,apache,apache2
+      copy:
+        src: default_index.html
+        dest: /var/www/html/index.html
+        owner: kosi
+        group: engineering
+        mode: 0644
+
