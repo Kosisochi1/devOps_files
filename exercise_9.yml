@@ -1,0 +1,43 @@
+---
+ - hosts: web_server
+   become: true
+   tasks:
+     
+
+     - name: Upgrade and update
+       tags: always
+       apt: 
+         upgrade: dist
+         update_cache: yes
+     - name: Install Apache2
+       apt:
+          name:
+              - apache2
+              - libapache2-mod-php
+              - php
+          state: present
+     - name: Restart apache
+       service:
+              name: apache2
+              state: restarted
+              enabled: yes
+     - name: Install hwclock
+       apt:
+          name: util-linux
+     - name: Set timezone
+       timezone:
+               name: Africa/Lagos
+     - name: Remove index.html file
+       file:
+           path: /var/www/html/index.html
+           state: absent
+     - name: Deploy Server
+       copy:
+         dest: '/var/www/html/index.php'
+         content: | 
+            <?php
+            echo date("F d, Y h:i:s A e", time());
+            ?>
+         owner: root
+         group: root
+         mode: '0644'

@@ -1,0 +1,57 @@
+---
+ - hosts: web_server
+   become: true
+   tasks: 
+
+# upgrade and update play
+
+     - name: Upgrade and update Server
+       tags: always
+       apt:
+           upgrade: dist
+           update_cache: yes
+
+# Install Apache play
+
+     - name: Install Apache
+       apt:
+          name: apache2
+          state: present
+
+# Enable Apache on boot play
+ 
+     - name: Enable Apache on boot
+       systemd:
+              name: apache2
+              state: started
+              enabled: yes
+
+# Install hardwareclock for timezone use
+
+     - name: Install hwclock
+       apt:   
+            name: util-linux
+
+# Set Timezone to Africa/Lagos
+
+     - name: Set the server time to Africa/Lagos Timezone  
+       timezone:
+                name: Africa/Lagos
+
+# Firewall rule
+
+     - name: Add firewall rule to allow port 80
+       ufw:
+           rule: allow 
+           port: '80'
+           proto: tcp
+
+# Deploy index html to server play
+
+     - name: Deploy iindex.html
+       copy: 
+             src:  default_index.html
+             dest: /var/www/html/index.html
+             owner: root
+             group: root
+             mode: '0644'
